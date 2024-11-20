@@ -20,3 +20,4 @@ class Particle:
         Relativistic beta factor
         '''
         return np.sqrt(1-1/self.get_gamma()**2)
+        #return np.linalg.norm(self.momentum)/self.energy

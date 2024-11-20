@@ -6,8 +6,9 @@ class PionDecaySim:
     Simulates π+ → μ+ + νμ decay
     '''
     # Particle masses in MeV/c^2
-    PION_MASS = 139.57  # π+ mass
-    MUON_MASS = 105.66  # μ+ mass
+    PION_MASS = 139.57  # π+ mass MeV
+    MUON_MASS = 105.66  # μ+ mass MeV
+    C = 3e8 # m/s
     
     def __init__(self, n_particles, pion_momentum_mean, pion_momentum_std):
         self.n_particles = n_particles
@@ -57,9 +58,11 @@ class PionDecaySim:
         beta = pion.get_beta()
         gamma = pion.get_gamma()
         p_parallel = rest_momentum[0] # x-component of momentum
-        p_parallel_vec = np.array([p_parallel,0,0])
-        p_perp_vec = rest_momentum - p_parallel_vec
-        p_lab_parallel = gamma*(p_parallel + beta*E_rest)
-        p_lab = p_perp_vec + p_lab_parallel 
+        p_parallel_vec = np.array([p_parallel,0,0]) # This component will be modified due to gamma factor
+        p_perp_vec = rest_momentum - p_parallel_vec # This component remains the same, particle does not move in this direction
+        p_lab_parallel = gamma*(p_parallel + beta*E_rest) # New momentum component that moves on the beam direction, lab frame
+        p_lab = p_perp_vec + np.array([p_lab_parallel,0,0]) 
         E_lab = gamma*(E_rest + beta*p_parallel)
-        return Particle(mass, p_lab, E_lab)
+        #if np.linalg.norm(p_lab) > E_lab:
+        #    print(p_lab,E_lab)
+        return Particle(mass, p_lab, E_lab) ### --------------> MAYBE ADDING C???

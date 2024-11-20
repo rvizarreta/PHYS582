@@ -14,7 +14,7 @@ class Detector:
                  module_spacing = 20.0,  
                  module_gap = 40.0,      
                  n_strips = 127,
-                 strip_width = 3.3,      
+                 strip_width = 33,      
                  strip_thickness = 1.0    
                  ):
         '''
@@ -74,8 +74,8 @@ class Detector:
             # Positionate planes for this module
             x1_pos = module_start_z
             u_pos = x1_pos + self.strip_thickness + self.module_spacing
-            v_pos = u_pos + self.strip_thickness + self.module_spacing 
-            x2_pos = v_pos + self.strip_thickness + self.module_spacing 
+            x2_pos = u_pos + self.strip_thickness + self.module_spacing 
+            v_pos = x2_pos + self.strip_thickness + self.module_spacing 
             # Create each plane in the module
             x_plane1 = DetectorPlane(
                 orientation="X",
@@ -94,18 +94,18 @@ class Detector:
                 strip_thickness=self.strip_thickness
             )
             
-            v_plane = DetectorPlane(
+            x_plane2 = DetectorPlane(
                 orientation="V",
-                position=np.array([0, 0, v_pos]),
+                position=np.array([0, 0, x2_pos]),
                 n_strips = self.n_strips,
                 strip_width=self.strip_width,
                 center_strip_length=self.plane_height,
                 strip_thickness=self.strip_thickness
             )
             
-            x_plane2 = DetectorPlane(
+            v_plane = DetectorPlane(
                 orientation="X",
-                position=np.array([0, 0, x2_pos]),
+                position=np.array([0, 0, v_pos]),
                 n_strips = self.n_strips,
                 strip_width=self.strip_width,
                 center_strip_length=self.plane_height,
@@ -137,8 +137,8 @@ class Detector:
         # Check each plane in the module
         for plane_name, plane in [('x1', module.x_plane1), 
                                 ('u', module.u_plane),
-                                ('v', module.v_plane), 
-                                ('x2', module.x_plane2)]:
+                                ('x2', module.x_plane2),
+                                ('v', module.v_plane)]:
             strips = plane.find_intersecting_strips(point)
             for strip in strips:
                 intersections.append((module.id, plane_name, strip))
@@ -159,8 +159,8 @@ class Detector:
             f"\nModule structure:",
             f"- X plane",
             f"- U plane (+60°)",
-            f"- V plane (-60°)",
-            f"- X plane"
+            f"- X plane",
+            f"- V plane (-60°)"
         ]
         return "\n".join(info)
 
@@ -254,8 +254,8 @@ class Detector:
             positions = [
                 (module_start_z, 'X', 0),
                 (module_start_z + self.module_spacing + self.strip_thickness, 'U', np.pi/3),
-                (module_start_z + 2*self.module_spacing + 2*self.strip_thickness, 'V', -np.pi/3),
-                (module_start_z + 3*self.module_spacing + 3*self.strip_thickness, 'X', 0)
+                (module_start_z + 2*self.module_spacing + 2*self.strip_thickness, 'X', -np.pi/3),
+                (module_start_z + 3*self.module_spacing + 3*self.strip_thickness, 'V', 0)
             ]
             
             # Create each plane
