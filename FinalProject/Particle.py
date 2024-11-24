@@ -4,10 +4,11 @@ class Particle:
     '''
     Store particle properties and kinematics.
     '''
-    def __init__(self,mass,momentum,energy):
+    def __init__(self,mass,momentum,energy,position=None):
         self.mass = mass
         self.momentum = momentum
         self.energy = energy
+        self.position = position
         
     def get_gamma(self):
         '''

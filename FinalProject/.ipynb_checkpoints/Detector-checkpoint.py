@@ -224,7 +224,9 @@ class Detector:
         return vertices[:, 0], vertices[:, 1], vertices[:, 2], np.array(i), np.array(j), np.array(k)
 
     def visualize(self, width=1500, height=1000):
-        """Create interactive 3D visualization of the detector"""
+        '''
+        Create interactive 3D visualization of the detector
+        '''
         fig = go.Figure()
         
         plane_info = {
@@ -327,4 +329,129 @@ class Detector:
         
         return fig
     
+    def visualize_hits(self, hits, width=1500, height=1000):
+        '''
+        Visualize detector with muon track hits
+        '''
+        # Create base detector visualization
+        fig = self.visualize(width, height)
+
+        # Add initial position (1m before detector)
+        initial_pos = np.array([0, 0, -1000])
+        fig.add_trace(go.Scatter3d(
+            x=[initial_pos[0]],
+            y=[initial_pos[1]],
+            z=[initial_pos[2]],
+            mode='markers',
+            marker=dict(
+                size=8,
+                color='blue',
+                symbol='diamond'
+            ),
+            name='Initial Position'
+        ))
+
+        # Extract hit positions
+        hit_points = np.array([hit["intersection_point"] for hit in hits])
+
+        # Add hit points
+        fig.add_trace(go.Scatter3d(
+            x=hit_points[:, 0],
+            y=hit_points[:, 1],
+            z=hit_points[:, 2],
+            mode='markers+lines',
+            marker=dict(
+                size=5,
+                color='red',
+                symbol='circle'
+            ),
+            line=dict(
+                color='yellow',
+                width=2
+            ),
+            name='Muon Track'
+        ))
+
+        return fig
+    
+    def visualize_hits_projections(self, hits, figsize=(15, 5)):
+        '''
+        Create XY, XZ, and YZ projections of the detector and muon track
+        '''
+        #fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=figsize)
+        fig = plt.figure(figsize=(figsize[0], figsize[1]))
+        gs = fig.add_gridspec(1, 4, width_ratios=[1, 1, 1, 0.05])
+        
+        # Create three axes for the projections
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1])
+        ax3 = fig.add_subplot(gs[2])
+        cax = fig.add_subplot(gs[3])
+
+        # Extract hit positions
+        hit_points = np.array([hit["intersection_point"] for hit in hits])
+        initial_pos = np.array([0, 0, -1000])  # 1m before detector
+        energies = np.array([hit["energy"] for hit in hits])
+        all_points = np.vstack([initial_pos, hit_points])
+
+        # Create hexagon points for detector boundary
+        angles = np.linspace(np.pi/6, 2*np.pi+np.pi/6, 7)
+        hex_x = self.outer_radius * np.cos(angles)
+        hex_y = self.outer_radius * np.sin(angles)
+        
+         # Create color normalizer for energy scale
+        norm = plt.Normalize(energies.min(), energies.max())
+
+        # XY Projection (Front view)
+        ax1.plot(hex_x, hex_y, 'k-', alpha=0.3, label='Detector boundary')
+        ax1.scatter(initial_pos[0], initial_pos[1], c='blue', s=20)
+        scatter1 = ax1.scatter(hit_points[:, 0], hit_points[:, 1], 
+                          c=energies, s=10, cmap='magma_r', marker='>', norm=norm)
+        ax1.plot(all_points[:, 0], all_points[:, 1], 'y-', alpha=0.5)
+        ax1.set_xlabel('X [mm]')
+        ax1.set_ylabel('Y [mm]')
+        ax1.set_title('XY Projection (Front view)')
+        ax1.grid(True)
+        ax1.axis('equal')
+        
+        # Add scale bar to XY projection
+        scalebar_length = 500  # 500mm = 50cm scale bar
+        x_min, x_max = ax1.get_xlim()
+        y_min, y_max = ax1.get_ylim()
+        ax1.plot([x_min + 100, x_min + 100 + scalebar_length], 
+                 [y_min + 100, y_min + 100], 'k-', linewidth=2)
+        ax1.text(x_min + 100 + scalebar_length/2, y_min + 150, 
+                 f'{scalebar_length/10} cm', horizontalalignment='center')
+
+        # XZ Projection (Top view)
+        ax2.axhline(y=0, color='k', alpha=0.3)
+        ax2.axhline(y=self.outer_radius, color='k', alpha=0.3)
+        ax2.axhline(y=-self.outer_radius, color='k', alpha=0.3)
+        ax2.scatter(initial_pos[2], initial_pos[0], c='blue', s=20)
+        ax2.scatter(hit_points[:, 2], hit_points[:, 0], 
+                          c=energies, s=10, cmap='magma_r', marker='>', norm=norm)
+        ax2.plot(all_points[:, 2], all_points[:, 0], 'y-', alpha=0.5)
+        ax2.set_xlabel('Z [mm]')
+        ax2.set_ylabel('X [mm]')
+        ax2.set_title('XZ Projection (Top view)')
+        ax2.grid(True)
+
+        # YZ Projection (Side view)
+        ax3.axhline(y=0, color='k', alpha=0.3)
+        ax3.axhline(y=self.outer_radius, color='k', alpha=0.3)
+        ax3.axhline(y=-self.outer_radius, color='k', alpha=0.3)
+        ax3.scatter(initial_pos[2], initial_pos[1], c='blue', s=20)
+        ax3.scatter(hit_points[:, 2], hit_points[:, 1], 
+                          c=energies, s=10, cmap='magma_r', marker='>', norm=norm)
+        ax3.plot(all_points[:, 2], all_points[:, 1], 'y-', alpha=0.5)
+        ax3.set_xlabel('Z [mm]')
+        ax3.set_ylabel('Y [mm]')
+        ax3.set_title('YZ Projection (Side view)')
+        ax3.grid(True)
+        
+        # Add colorbar for energy scale
+        cbar = plt.colorbar(scatter1, cax=cax, label='Energy [MeV]', pad=0.02)
+
+        plt.tight_layout()
+        return fig
 
