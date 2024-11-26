@@ -15,7 +15,7 @@ class Detector:
                  module_gap = 40.0,      
                  n_strips = 127,
                  strip_width = 33,      
-                 strip_thickness = 1.0    
+                 strip_thickness = 25.4    
                  ):
         '''
         Initialize detector with multiple XUVY modules
@@ -454,4 +454,4 @@ class Detector:
 
         plt.tight_layout()
         return fig
-
+    
