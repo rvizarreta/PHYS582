@@ -27,7 +27,7 @@ class GEANT5:
         avg_Z = 0.0759*1 + 0.919*6 + 0.0051*8 + 0.0077*22
         avg_A = 0.0759*1.00784 + 0.919*12.01 + 0.0051*32 + 0.0077*47.867
         beta, gamma = particle.get_beta(), particle.get_gamma()
-        I_mean = 68.7 #avg_Z*12 + 7
+        I_mean = 68.7e-6 #avg_Z*12 + 7 MeV
         M = particle.mass
         delta = 0
         Tmax = (2*ELECTRON_MASS*(beta*gamma)**2)/(1 + 2*ELECTRON_MASS/M*np.sqrt(1+(beta*gamma)**2) + (ELECTRON_MASS/M)**2)
@@ -94,7 +94,7 @@ class GEANT5:
                 hit_strips, pmt_distance = plane.find_intersecting_strips(intersection)
                 # Calculate new energy
                 dEdX = -1*self.calculate_bethe_bloch(particle)
-                energy_deposit = abs(dEdX*3*(detector.strip_thickness/10))
+                energy_deposit = abs(dEdX*(detector.strip_thickness/10))
                 new_energy = initial_energy - energy_deposit
                 if new_energy > particle.mass:
                     # If there was a hit, record it
