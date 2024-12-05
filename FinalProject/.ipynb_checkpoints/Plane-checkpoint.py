@@ -94,9 +94,11 @@ class DetectorPlane:
             # Transform point to strip's local coordinates
             local_point = self.to_local_coordinates(point, strip.position, self.angle)
             # Check if point is within strip boundaries
-            if (abs(local_point[0]) <= self.strip_width/2 and
-                abs(local_point[1]) <= strip.length/2 and
-                abs(local_point[2]) <= self.strip_thickness):
+            if (abs(local_point[0]) <= self.strip_width/2 and abs(local_point[1]) <= strip.length/2 and 0 <= local_point[2] <= self.strip_thickness):
                 intersecting_strips.append(strip)
-        return intersecting_strips
+            if intersecting_strips:
+                pmt_distance = abs((intersecting_strips[0].length/2) - local_point[1])
+            else:
+                pmt_distance = None
+        return intersecting_strips, pmt_distance
     

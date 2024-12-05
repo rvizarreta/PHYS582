@@ -10,12 +10,12 @@ class Detector:
     '''
     
     def __init__(self,
-                 n_modules = 15,
+                 n_modules = 40,
                  module_spacing = 20.0,  
                  module_gap = 40.0,      
                  n_strips = 127,
                  strip_width = 33,      
-                 strip_thickness = 25.4    
+                 strip_thickness = 10 #25.4    
                  ):
         '''
         Initialize detector with multiple XUVY modules
@@ -47,7 +47,7 @@ class Detector:
         # Create plot
         plt.figure(figsize=(8, 8))
         plt.plot(outer_hex_x, outer_hex_y, 'b-', label='Outer boundary')
-        plt.plot(point[0], point[1], 'kx', markersize=10, label=f'Point ({point[0]:.1f}, {point[1]:.1f})')
+        plt.plot(point[0], point[1], 'kx', markersize=10, label=f'Point ({point[0]:.1f}, {point[1]:.1f}, {point[2]:.1f})')
 
         plt.axhline(y=0, color='gray', linestyle=':')
         plt.axvline(x=0, color='gray', linestyle=':')
@@ -130,10 +130,13 @@ class Detector:
         # Find which module contains this z position
         module_length = (3*self.module_spacing + 
                         4*self.strip_thickness)
-        module_idx = int(point[2] / module_length)
+        residual = point[2] % (module_length + self.module_gap)
+        module_idx = int((point[2] - residual)/(module_length + self.module_gap))
+        #module_idx = int(point[2] / module_length)
         if 0 <= module_idx < self.n_modules:
             module = self.modules[module_idx]
-            
+        elif module_idx == self.n_modules:
+            module = self.modules[module_idx-1]
         # Check each plane in the module
         for plane_name, plane in [('x1', module.x_plane1), 
                                 ('u', module.u_plane),
@@ -430,7 +433,7 @@ class Detector:
         ax2.scatter(initial_pos[2], initial_pos[0], c='blue', s=20)
         ax2.scatter(hit_points[:, 2], hit_points[:, 0], 
                           c=energies, s=10, cmap='magma_r', marker='>', norm=norm)
-        ax2.plot(all_points[:, 2], all_points[:, 0], 'y-', alpha=0.5)
+        #ax2.plot(all_points[:, 2], all_points[:, 0], 'y-', alpha=0.5)
         ax2.set_xlabel('Z [mm]')
         ax2.set_ylabel('X [mm]')
         ax2.set_title('XZ Projection (Top view)')
@@ -443,7 +446,7 @@ class Detector:
         ax3.scatter(initial_pos[2], initial_pos[1], c='blue', s=20)
         ax3.scatter(hit_points[:, 2], hit_points[:, 1], 
                           c=energies, s=10, cmap='magma_r', marker='>', norm=norm)
-        ax3.plot(all_points[:, 2], all_points[:, 1], 'y-', alpha=0.5)
+        #ax3.plot(all_points[:, 2], all_points[:, 1], 'y-', alpha=0.5)
         ax3.set_xlabel('Z [mm]')
         ax3.set_ylabel('Y [mm]')
         ax3.set_title('YZ Projection (Side view)')
